@@ -24,7 +24,7 @@ class Story {
 
 	getHostName() {
 		// UNIMPLEMENTED: complete this function!
-		return "hostname.com";
+		return this.url;
 	}
 }
 
@@ -72,6 +72,7 @@ class StoryList {
 	 */
 
 	async addStory(user, newStory) {
+		console.debug("addStory");
 		this.stories.push(new Story({ ...newStory, username: user.username }));
 		return new Story({ ...newStory, username: user.username });
 	}

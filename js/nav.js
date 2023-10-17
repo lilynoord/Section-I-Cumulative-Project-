@@ -38,4 +38,6 @@ function updateNavOnLogin() {
 $navSubmit.on("click", navSubmitStory);
 function navSubmitStory(evt) {
 	console.debug("navSubmitStory", evt);
+	hidePageComponents();
+	$submitForm.show();
 }
