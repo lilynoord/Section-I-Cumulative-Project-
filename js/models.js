@@ -71,10 +71,22 @@ class StoryList {
 	 * Returns the new Story instance
 	 */
 
-	async addStory(user, newStory) {
+	async addStory(user, { title, author, url }) {
 		console.debug("addStory");
-		this.stories.push(new Story({ ...newStory, username: user.username }));
-		return new Story({ ...newStory, username: user.username });
+
+		const token = user.loginToken;
+
+		const response = await axios({
+			method: "POST",
+			url: `${BASE_URL}/stories`,
+			data: { token, story: { title, author, url } },
+		});
+
+		const story = new Story(response.data.story);
+		this.stories.unshift(story);
+		user.ownStories.unshift(story);
+
+		return story;
 	}
 }
 
@@ -187,5 +199,42 @@ class User {
 			console.error("loginViaStoredCredentials failed", err);
 			return null;
 		}
+	}
+
+	async handleFavorite(story, hasFas) {
+		let method;
+		if (hasFas) {
+			method = "DELETE";
+			this.favorites = this.favorites.filter(
+				(story2) => story2.storyId !== story2.storyId
+			);
+		} else {
+			method = "POST";
+			this.favorites.push(story);
+		}
+		const token = this.loginToken;
+		console.log({
+			url: `${BASE_URL}/users/${this.username}/favorites/${story.storyId}`,
+			method: method,
+			data: { token },
+		});
+		await axios({
+			url: `${BASE_URL}/users/${this.username}/favorites/${story.storyId}`,
+			method: method,
+			data: { token },
+		});
+	}
+	//Also using this from the given example since it seems to be the best way to do this.
+	isFavorite(story) {
+		return this.favorites.some((s) => s.storyId === story.storyId);
+	}
+
+	async deleteStory(story) {
+		const token = this.loginToken;
+		await axios({
+			url: `${BASE_URL}/stories/${story.storyId}`,
+			method: "DELETE",
+			data: { token },
+		});
 	}
 }
